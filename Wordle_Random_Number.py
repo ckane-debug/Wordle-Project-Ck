@@ -14,8 +14,8 @@ app.resizable(False, False)
 app.geometry("400x600")
 
  
-title_font  = tkfont.Font(family="Fredoka One", size=22, weight="bold")
-legend_font = tkfont.Font(family="Fredoka One", size=11)
+title_font  = tkfont.Font(family="rFedoka One", size=22, weight="bold")
+legend_font = tkfont.Font(family="Helvetica Neue", size=11)
  
 # ── Header 
 header = tk.Frame(app, bg=BG)
@@ -51,13 +51,41 @@ TILE_BORDER = "#00FF00"
 TILE_SIZE   = 58
 GAP         = 5
  
-tile_font = tkfont.Font(family="Fredoka One", size=26, weight="bold")
+tile_font = tkfont.Font(family="Hredoka One", size=26, weight="bold")
  
 grid_frame = tk.Frame(app, bg=BG)
 grid_frame.pack(pady=16)
  
 tiles  = []   # tiles[row][col]  → Frame
 labels = []   # labels[row][col] → Label
+
+current_row     = 0   # which row we're filling (0–5)
+current_col     = 0   # which column is next (0–4)
+current_letters = []  # letters typed so far this row
+TILE_FILLED     = "#121213"
+TILE_BORDER_ACTIVE = "#999999"   # lighter border when a letter is typed
+ 
+def set_tile(row, col, text, bg, border):
+    tiles[row][col].config(bg=bg, highlightbackground=border)
+    labels[row][col].config(text=text, bg=bg)
+    
+def on_Key(event):
+    global current_col, current_letters
+    
+    key = event.keysym
+    
+    if key == 'Backspace':
+        if current_letters:
+            current_col -= 1
+            current_letters.pop()
+            set_tile(current_row, current_col, "", TILE_EMPTY, TITLE_BORDER)
+    elif len(key) == 1 and key.isalpha() and current_col < 5:
+        current_letters.append(key.lower())
+        set_tile(current_row, current_col, key.upper(), TITLE_FILLED, TITLE_BORDER_ACTIVE)
+        current_col += 1
+        
+app.bind('<key>', on_Key)
+                   
  
 for r in range(6):
     row_tiles  = []
