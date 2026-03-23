@@ -64,28 +64,9 @@ current_col     = 0   # which column is next (0–4)
 current_letters = []  # letters typed so far this row
 TILE_FILLED     = "#121213"
 TILE_BORDER_ACTIVE = "#999999"   # lighter border when a letter is typed
- 
-def set_tile(row, col, text, bg, border):
-    tiles[row][col].config(bg=bg, highlightbackground=border)
-    labels[row][col].config(text=text, bg=bg)
-    
-def on_Key(event):
-    global current_col, current_letters
-    
-    key = event.keysym
-    
-    if key == 'Backspace':
-        if current_letters:
-            current_col -= 1
-            current_letters.pop()
-            set_tile(current_row, current_col, "", TILE_EMPTY, TITLE_BORDER)
-    elif len(key) == 1 and key.isalpha() and current_col < 5:
-        current_letters.append(key.lower())
-        set_tile(current_row, current_col, key.upper(), TITLE_FILLED, TITLE_BORDER_ACTIVE)
-        current_col += 1
-        
-app.bind('<key>', on_Key)
-                   
+TITLE_BORDER = 0
+TITLE_FILLED = False
+TITLE_BORDER_ACTIVE = False
  
 for r in range(6):
     row_tiles  = []
@@ -96,19 +77,66 @@ for r in range(6):
             width=TILE_SIZE, height=TILE_SIZE,
             bg=TILE_EMPTY,
             highlightbackground=TILE_BORDER,
-            highlightthickness=2,
-        )
-        frame.grid(row=r, column=c,
-                   padx=GAP // 2, pady=GAP // 2)
-        frame.grid_propagate(False)  # lock to TILE_SIZE
- 
+            highlightthickness=2,  
+            )
+        frame.grid(row=r, column=c, padx=GAP // 2, pady=GAP // 2)
+        frame.grid_propagate(False) 
+
         lbl = tk.Label(
             frame, text="",
             font=tile_font,
             bg=TILE_EMPTY, fg="#0000FF",
             anchor="center",
         )
+        lbl.pack(expand=True, fill="both")  
+        row_tiles.append(frame)
+        row_labels.append(lbl)
 
+    tiles.append(row_tiles)   
+    labels.append(row_labels)  
     
+current_row     = 0  
+current_col     = 0   # which column is next (0–4)
+current_letters = []  # letters typed so far this row
+TILE_FILLED     = "#121213"
+TILE_BORDER_ACTIVE = "#999999"   # lighter border when a letter is typed
+ 
+def set_tile(row, col, text, bg, border):
+    tiles[row][col].config(bg=bg, highlightbackground=border)
+    labels[row][col].config(text=text, bg=bg)
+ 
+def on_key(event):
+    global current_row, current_col, current_letters
+ 
+    key = event.keysym
+ 
+    if key == 'Return':
+        if len(current_letters) == 5:
+            # Row is complete — advance to the next row
+            print(f"Row {current_row} submitted: {''.join(current_letters)}")  # debug
+            current_row    += 1
+            current_col     = 0
+            current_letters = []
+            if current_row > 5:
+                print("Game over — no more rows")
+        else:
+            print(f"Need 5 letters, only have {len(current_letters)}")  # debug
+ 
+    elif key == 'BackSpace':
+        if current_letters:
+            current_col -= 1
+            current_letters.pop()
+            set_tile(current_row, current_col,
+                     "", TILE_EMPTY, TILE_BORDER)
+ 
+    elif len(key) == 1 and key.isalpha() and current_col < 5:
+        current_letters.append(key.lower())
+        set_tile(current_row, current_col,
+                 key.upper(), TILE_FILLED, TILE_BORDER_ACTIVE)
+        current_col += 1
+ 
+
+app.bind('<Key>', on_key)
+
     
 app.mainloop() 
